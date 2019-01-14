@@ -1,0 +1,95 @@
+function varargout = GUI(varargin)
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @GUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @GUI_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+
+
+
+
+function GUI_OpeningFcn(hObject, eventdata, handles, varargin)
+
+
+
+handles.output = hObject;
+
+
+guidata(hObject, handles);
+
+
+
+
+function varargout = GUI_OutputFcn(hObject, eventdata, handles)
+
+
+
+varargout{1} = handles.output;
+
+
+
+function pushbutton1_Callback(hObject, eventdata, handles)
+[filename,pathname] = imgetfile();
+global myimg1;
+myimg1=imread(filename);
+%img{i} = imread(list(i).name);
+ if pathname
+     msgbox(sprintf('Error'),'Error','Error');
+     return
+ end
+
+
+
+
+I = imread('image.jpg');
+grayimage=rgb2gray(I);
+%ad=imadjust(grayimage,[0.1,0.9],[0.0,1.0]);
+ad=imadjust(grayimage);
+%filtered2=fspecial('average',[3 3]);
+%filtered=imfilter(grayimage,filtered2);
+filtered=imnoise(ad,'salt & pepper',0);
+%sharpen= imsharpen(I);
+%contrast=imcontrast(filtered);
+
+%pixel_avg=mean(filtered(:));
+%perprocessed=pixel_avg-grayimage;
+
+SE=strel('disk',3);
+%filtered=imopen(grayimage,SE);
+
+erosion=imerode(filtered,SE);
+dilation=imdilate(filtered,SE);
+diff=dilation-erosion;
+%image_dilate_diff=dilation-grayimage;
+%image_erode_diff=erosion-grayimage;
+gradient_image=filtered-diff;
+SE2=strel('diamond',3);
+new_dilation=imdilate(gradient_image,SE2);
+
+axes(handles.axes1);
+imshow(I);
+c=edge(new_dilation,'sobel');
+axes(handles.axes2);
+imshow(c);
+
+
+c2=edge(new_dilation,'prewitt');
+axes(handles.axes3);
+imshow(c2);
+
+
+c3=edge(new_dilation,'canny',0.2);
+axes(handles.axes4);
+imshow(c3);
+end
